@@ -296,7 +296,7 @@ def record_lesson(run: Run, role: str, step: str, evidence: str) -> None:
 
 def step_intake(run: Run, issue: int) -> dict:
     _, out = sh(["gh", "issue", "view", str(issue), "-R", run.cfg["repo"], "--json", "title,body,url"], check=True)
-    d = json.loads(out)
+    d = json.loads(out[out.index("{"):out.rindex("}") + 1])   # gh may print notices around the JSON
     (run.dir / "issue.md").write_text(f"# {d['title']}\n\n{d['body']}\n")
     return {"issue": issue, "title": d["title"], "url": d["url"]}
 
@@ -572,12 +572,27 @@ def step_ship(run: Run) -> dict:
             f"- Independent diff review: {v['review']['verdict']}\n- Fix rounds: {v['fix_rounds']}\n"
             + (f"- Hidden tests amended after a dispute: {v['amended']['reason']}\n" if v.get("amended") and v["amended"]["changed"] else "")
             + f"\nFactory run `{run.id}`.\n")
-    _, out = sh(["gh", "pr", "create", "-R", repo, "--head", ws["branch"], "--base", run.cfg.get("base", "main"),
-                 "--title", intake["title"], "--body", body], cwd=run.impl, check=True)
-    pr = out.strip().splitlines()[-1]
-    sh(["gh", "pr", "merge", pr, "--squash", "--delete-branch"], cwd=run.impl, check=True)
-    _, out = sh(["gh", "pr", "view", pr, "-R", repo, "--json", "mergeCommit"], check=True)
-    return {"pr": pr, "merge_sha": json.loads(out)["mergeCommit"]["oid"]}
+    def find_pr() -> str | None:   # by branch, so a resumed run does not open a second one
+        _, out = sh(["gh", "pr", "list", "-R", repo, "--head", ws["branch"], "--state", "all", "--json", "url", "--jq", ".[0].url"])
+        m = re.search(r"https://\S+/pull/\d+", out)
+        return m.group(0) if m else None
+    pr = find_pr()
+    if not pr:
+        sh(["gh", "pr", "create", "-R", repo, "--head", ws["branch"], "--base", run.cfg.get("base", "main"),
+            "--title", intake["title"], "--body", body], cwd=run.impl, check=True)
+        pr = find_pr()   # gh prints notices after the URL, so its output is not parsed
+    if not pr:
+        raise RuntimeError("the pull request was not created")
+    _, out = sh(["gh", "pr", "view", pr, "-R", repo, "--json", "state", "--jq", ".state"])
+    merged = "MERGED" in out
+    if not merged:
+        sh(["gh", "pr", "merge", pr, "-R", repo, "--squash"], check=True)
+    sh(["git", "push", "-q", "origin", "--delete", ws["branch"]], cwd=run.impl)   # the local branch stays with its worktree
+    _, out = sh(["gh", "pr", "view", pr, "-R", repo, "--json", "mergeCommit", "--jq", ".mergeCommit.oid"], check=True)
+    sha = re.search(r"\b[0-9a-f]{40}\b", out)
+    if not sha:
+        raise RuntimeError(f"no merge commit for {pr}: {out[:300]}")
+    return {"pr": pr, "merge_sha": sha.group(0)}
 
 
 def prod_check(run: Run, sha: str, label: str) -> str | None:
@@ -663,7 +678,9 @@ def escalate(run: Run, reason: str) -> None:
     run.s["status"], run.s["stopped_because"] = "escalated", reason[:4000]
     run.s["human_touches"]["escalations"] += 1
     intake = run.s["steps"].get("intake", {}).get("data")
-    if intake:
+    if os.environ.get("VAMPIRE_NO_ISSUE"):   # while debugging the driver itself
+        say(f"stopped (no issue opened): {reason[:1500]}")
+    elif intake:
         ws = run.s["steps"].get("workspace", {}).get("data") or {}
         body = (f"The factory stopped on #{intake['issue']} and needs a person.\n\n{reason[:6000]}\n\n"
                 f"- Run: `{run.id}`\n- Branch: `{ws.get('branch')}` (worktree `{run.impl}`)\n- Logs: `{run.dir}`\n\n"
@@ -677,6 +694,7 @@ def cmd_run(a) -> int:
     if a.resume:
         run = Run(a.resume, a.resume.split("-")[0] if not a.target else a.target)
         run.s["status"] = "running"
+        run.s.pop("stopped_because", None)
     else:
         if not a.issue:
             sys.exit("give --issue N or --resume RUN")
