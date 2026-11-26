@@ -4,8 +4,8 @@ step: ship
 seen: 1
 first_run: fighter-1-20261126-1652
 ---
-**What happened:** In step ship, the driver ran `gh pr merge` with the branch argument set to "  - Event subscriptions are in preview and may not be enabled for your account.", a CLI warning line, not a branch name. gh reported `no pull requests found for branch` and the merge did not happen.
+**What happened:** In step ship, the driver ran `gh pr merge` with the argument "  - Event subscriptions are in preview and may not be enabled for your account.", a notice printed by gh, where the pull request URL should have been. The pull request had been created; the merge did not happen.
 
-**Cause:** unknown. The evidence shows the warning text was used as the branch name, but not which command's output it came from or how the driver extracted it. The likely cause is that the branch name was parsed from combined command output that included a warning line.
+**Cause:** The driver took the last line of `gh pr create` output as the URL. Its `sh` helper merges stderr into stdout, and gh printed a notice after the URL.
 
-**Rule:** Before running `gh pr merge`, get the branch name from `git rev-parse --abbrev-ref HEAD` (or the branch the implement step pushed), and abort if it contains spaces or newlines.
+**Rule:** Never take a value from a line position in a CLI's output; ask for it with a JSON query or match it with a pattern, and make each step that writes to a remote look for its earlier result before repeating it.

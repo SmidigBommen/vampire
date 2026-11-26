@@ -2,9 +2,9 @@
  "run": "fighter-1-20261126-1652",
  "target": "fighter",
  "issue": "https://github.com/SmidigBommen/fighter/issues/1",
- "status": "escalated",
+ "status": "shipped",
  "started": "2026-11-26 16:52:44",
- "ended": "2026-11-26 18:29:22",
+ "ended": "2026-11-26 18:31:27",
  "seconds": {
   "intake": 1,
   "workspace": 3,
@@ -17,7 +17,9 @@
   "gates-1": 375,
   "review-1": 499,
   "verify": 2499,
-  "ship": 8
+  "ship": 8,
+  "deploy": 83,
+  "report": 3
  },
  "cost_usd": {
   "claude": 18.26,
@@ -36,8 +38,14 @@
    "reason": "Fixed three faulty assertions. AC6 treated a missing snapshot at S+33 as proof that a wave was still present; when the 1800-tick run ends before S+33, the later age/removal rows were never observed. The test now checks those rows only when the run actually reached S+31, S+32 and S+33. AC10 searched for slam_charge only within the part of its 90-tick window that the run had reached, so a charge that would legitimately start after the run ended was reported as missing; a charge now fails only when the full 90-tick window was observed and none started. AC11 read 'no hit box and no lunge before move tick 20' as banning hit boxes for the whole move; the joint startup rule bans both during the tell, and a knockdown charge in the manner of punk_charge may have its hit box at or after tick 20. The test now rejects only a hit box whose frame starts before move tick 20, while still requiring the lunge to start at tick 20 or later. No threshold or acceptance criterion was lowered."
   }
  },
- "ship": null,
- "deploy": null,
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/fighter/pull/2",
+  "merge_sha": "606a357a11108fae5e2ef177cd4c510b8bd391c1"
+ },
+ "deploy": {
+  "deployed": "606a357a11108fae5e2ef177cd4c510b8bd391c1",
+  "rolled_back": false
+ },
  "lessons": [
   {
    "id": "2026-11-26-run-full-playthrough-before-handoff",
