@@ -1,0 +1,43 @@
+# Beat 'em up game, live at https://fighter.smidigbommen.no
+repo = "SmidigBommen/fighter"
+path = "~/dev/side-scroller-game"
+base = "main"
+install = "pnpm install --frozen-lockfile --prefer-offline"
+# Files the spec writer should read first.
+context = "PLAN.md, src/sim/types.ts, src/sim/world.ts, src/sim/ai.ts, src/sim/bot.ts, src/data/characters.ts, src/data/stage4.ts, src/sim/combat.test.ts, execution/smoke.mjs"
+# Left out of the diff the reviewer reads.
+review_exclude = ["pnpm-lock.yaml", "assets/game/*.png"]
+
+# Run in this order in the implementer's worktree. A failure of the first one skips the rest.
+[gates]
+build = "pnpm build"
+test = "pnpm test"
+
+[smoke]
+serve = "pnpm exec vite --port {port} --strictPort"
+run = "node execution/smoke.mjs --url {url} --out {out} --seconds 4"
+timeout = 900
+
+[holdout]
+dir = "src/holdout"
+suffixes = [".test.ts"]
+run = "pnpm exec vitest run src/holdout --reporter=json --outputFile={out}"
+timeout = 1800
+
+[implementer]
+# model = "opus"   # unset: the Claude Code default
+allowed_tools = [
+  "Read", "Edit", "Write", "Glob", "Grep",
+  "Bash(pnpm:*)", "Bash(node:*)", "Bash(npx:*)", "Bash(ls:*)", "Bash(cat:*)", "Bash(mkdir:*)",
+  "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)",
+  "Bash(execution/build_assets.py:*)", "Bash(uv run:*)", "Bash(python3:*)",
+]
+
+[verifier]
+model = "openrouter/deepseek/deepseek-v4.1-flash-1017"
+thinking = "high"
+extensions = ["~/dev/agent-harness-alfredo/extensions/guardrails.ts"]
+
+[deploy]
+coolify_app = "fighter"
+url = "https://fighter.smidigbommen.no"
