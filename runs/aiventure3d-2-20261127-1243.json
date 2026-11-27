@@ -1,0 +1,60 @@
+{
+ "run": "aiventure3d-2-20261127-1243",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/2",
+ "status": "shipped",
+ "started": "2026-11-27 12:43:34",
+ "ended": "2026-11-27 13:47:07",
+ "seconds": {
+  "workspace": 2,
+  "spec": 369,
+  "holdout": 409,
+  "implement": 1808,
+  "gates-0": 46,
+  "fix-1": 149,
+  "gates-1": 46,
+  "review-1": 297,
+  "fix-2": 97,
+  "gates-2": 46,
+  "review-2": 449,
+  "verify": 1153,
+  "ship": 12,
+  "deploy": 57,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 44.67,
+  "pi": 1.06
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "58b3c2e785b68630960e8491967f2b5511b63bc9",
+  "fix_rounds": 2,
+  "holdout": "26 of 26",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/16",
+  "merge_sha": "aeee983aec1a3ad43b9d29ac6110d7879980d34d"
+ },
+ "deploy": {
+  "deployed": "aeee983aec1a3ad43b9d29ac6110d7879980d34d",
+  "rolled_back": false
+ },
+ "lessons": [
+  {
+   "id": "2026-11-27-run-existing-tests-before-reporting-done",
+   "step": "verify-0",
+   "repeat": false
+  },
+  {
+   "id": "2026-11-27-verify-sign-clearance-and-loading-state",
+   "step": "verify-1",
+   "repeat": false
+  }
+ ],
+ "stopped_because": null
+}
