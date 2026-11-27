@@ -2,26 +2,43 @@
  "run": "aiventure3d-3-20261127-1347",
  "target": "aiventure3d",
  "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/3",
- "status": "escalated",
+ "status": "shipped",
  "started": "2026-11-27 13:47:09",
- "ended": "2026-11-27 14:12:27",
+ "ended": "2026-11-27 16:43:13",
  "seconds": {
   "workspace": 2,
   "spec": 543,
   "holdout": 661,
-  "implement": 2
+  "implement": 1212,
+  "gates-0": 128,
+  "review-0": 464,
+  "verify": 592,
+  "ship": 12,
+  "deploy": 57,
+  "report": 3
  },
  "cost_usd": {
-  "claude": 7.93,
-  "pi": 0.22
+  "claude": 17.47,
+  "pi": 0.28
  },
  "human_touches": {
   "intake": 1,
   "escalations": 2
  },
- "verify": {},
- "ship": null,
- "deploy": null,
+ "verify": {
+  "sha": "065ed2d7ffbd5088816be3cb619bc371a9be41ef",
+  "fix_rounds": 0,
+  "holdout": "118 of 118",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/19",
+  "merge_sha": "1e992320240bfdaa6d7b5d8ffc43b8df2a859912"
+ },
+ "deploy": {
+  "deployed": "1e992320240bfdaa6d7b5d8ffc43b8df2a859912",
+  "rolled_back": false
+ },
  "lessons": [
   {
    "id": "2026-11-27-unsummarised-implement",
@@ -34,5 +51,5 @@
    "repeat": false
   }
  ],
- "stopped_because": "Step `implement` crashed:\n\n```\nclaude implement failed: success You've hit your 5-hour limit \u00b7 resets 4:10pm (Europe/Oslo)\n```"
+ "stopped_because": null
 }
