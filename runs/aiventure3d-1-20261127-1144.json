@@ -1,0 +1,54 @@
+{
+ "run": "aiventure3d-1-20261127-1144",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/1",
+ "status": "escalated",
+ "started": "2026-11-27 11:44:06",
+ "ended": "2026-11-27 12:35:12",
+ "seconds": {
+  "workspace": 2,
+  "spec": 264,
+  "holdout": 455,
+  "implement": 714,
+  "gates-0": 17,
+  "review-0": 681,
+  "fix-1": 81,
+  "gates-1": 18,
+  "review-1": 722,
+  "verify": 1528,
+  "ship": 12,
+  "deploy": 88
+ },
+ "cost_usd": {
+  "claude": 16.49,
+  "pi": 0.53
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 1
+ },
+ "verify": {
+  "sha": "6165552de1c8971b94db663286536230dddaf9ed",
+  "fix_rounds": 1,
+  "holdout": "41 of 41",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/13",
+  "merge_sha": "4eece864347dcf1cb97aaeef0687c29661bae851"
+ },
+ "deploy": null,
+ "lessons": [
+  {
+   "id": "2026-11-27-gate-opening-width-wrong-orientation",
+   "step": "verify-0",
+   "repeat": false
+  },
+  {
+   "id": "2026-11-27-coolify-deploy-failed-within-15-seconds",
+   "step": "deploy",
+   "repeat": false
+  }
+ ],
+ "stopped_because": "Production failed after deploying 4eece86 and the merge was reverted (1d5f182).\n\ndeployment failed:\ndeploying  gdnq0kjo5jprcgr8vdi1f92h  aiventure3d  SmidigBommen/3d-aiventure@main  running:healthy  https://aiventure3d.smidigbommen.no\nqueued kep4qlooiji66zqahtq6h1mu\n0s in_progress HEAD\n15s failed 4eece86\napplication running:healthy\n\nProduction is back on the previous version."
+}
