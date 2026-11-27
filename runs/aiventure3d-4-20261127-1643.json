@@ -1,0 +1,62 @@
+{
+ "run": "aiventure3d-4-20261127-1643",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/4",
+ "status": "shipped",
+ "started": "2026-11-27 16:43:15",
+ "ended": "2026-11-27 17:52:37",
+ "seconds": {
+  "intake": 1,
+  "workspace": 3,
+  "spec": 449,
+  "holdout": 433,
+  "implement": 1693,
+  "gates-0": 83,
+  "fix-1": 731,
+  "amend-1": 126,
+  "gates-1": 86,
+  "review-1": 463,
+  "verify": 1512,
+  "ship": 12,
+  "deploy": 57,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 32.77,
+  "pi": 0.32
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "8a27bf19e029959042af0eec68633ce387a3ab26",
+  "fix_rounds": 1,
+  "holdout": "33 of 33",
+  "amended": {
+   "changed": true,
+   "reason": "Fixed two defects in my own tests. test_ac08_parity_vocabulary: its failure messages called bad_kind.get('kind')/bad_outcome.get(...)/bad_fx.get(...) eagerly as arguments to expect(), so when no bad event existed (the passing case) the f-string raised AttributeError on None; the assertions now format the offending event value directly. test_ac06_api_only_rejections: it collected the active-fight snapshots first and compared them only after H.write() had replaced the session for the no_battle cases, so the earlier 'refused request changed the file' comparisons were against a stale snapshot; each request is now checked immediately after it is posted. No thresholds or criteria were loosened."
+  }
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/20",
+  "merge_sha": "608e28109dcc1954421f9db37cbeb3ffa209ccfe"
+ },
+ "deploy": {
+  "deployed": "608e28109dcc1954421f9db37cbeb3ffa209ccfe",
+  "rolled_back": false
+ },
+ "lessons": [
+  {
+   "id": "2026-11-27-reject-malformed-requests-before-writing-session",
+   "step": "verify-0",
+   "repeat": false
+  },
+  {
+   "id": "2026-11-27-holdout-tests-crashed-on-passing-path",
+   "step": "amend-1",
+   "repeat": false
+  }
+ ],
+ "stopped_because": null
+}
