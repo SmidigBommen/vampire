@@ -75,3 +75,5 @@ runs against a local server, a test runner that writes JSON in Jest's result for
 `factory queue` runs issues in order and stops at the first that does not ship. A run that crashed
 is resumed once; a run that used up its fix rounds is not. When Claude Code reports a usage limit,
 the driver waits and continues the same session, checking every 20 minutes for up to 30 hours.
+With `fallback_model` set under `[implementer]`, it first continues the session on that model and
+waits only when that model is out of capacity too; after a wait it returns to the first choice.

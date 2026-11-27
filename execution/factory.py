@@ -163,6 +163,15 @@ def render(name: str, **values: str) -> str:
     return text
 
 
+def set_model(cmd: list[str], model: str | None) -> list[str]:
+    """The command with --model set to `model`, or without --model when `model` is None."""
+    cmd = list(cmd)
+    if "--model" in cmd:
+        i = cmd.index("--model")
+        del cmd[i:i + 2]
+    return cmd + ["--model", model] if model else cmd
+
+
 def claude(run: Run, label: str, prompt: str, cwd: Path, tools: list[str], schema: dict | None = None,
            resume: str | None = None, model: str | None = None, timeout: int = 5400) -> dict:
     """Headless Claude Code. Returns {text, structured, session}."""
@@ -189,11 +198,21 @@ def claude(run: Run, label: str, prompt: str, cwd: Path, tools: list[str], schem
         said = str(d.get("result")) if d else tail(out, 10)
         if not (failed and LIMIT.search(said[:2000]) and attempt < LIMIT_TRIES):
             break
-        # Out of capacity: wait and go on, in the same session when there is one, so finished work is kept.
-        say(f"claude {label}: no capacity ({' '.join(said.split())[:120]}); waiting {LIMIT_WAIT // 60} min (attempt {attempt + 1})")
-        run.s["events"].append({"at": now(), "agent": "claude", "label": label, "waited_for_limit": LIMIT_WAIT})
-        run.save()
-        time.sleep(LIMIT_WAIT)
+        # Out of capacity: try the fallback model at once when there is one, otherwise wait. Either way go on
+        # in the same session when there is one, so finished work is kept.
+        fallback = run.cfg.get("implementer", {}).get("fallback_model")
+        current = cmd[cmd.index("--model") + 1] if "--model" in cmd else None
+        if fallback and current != fallback:
+            say(f"claude {label}: no capacity ({' '.join(said.split())[:120]}); switching to {fallback}")
+            run.s["events"].append({"at": now(), "agent": "claude", "label": label, "fallback_model": fallback})
+            run.save()
+            cmd = set_model(cmd, fallback)
+        else:
+            say(f"claude {label}: no capacity ({' '.join(said.split())[:120]}); waiting {LIMIT_WAIT // 60} min (attempt {attempt + 1})")
+            run.s["events"].append({"at": now(), "agent": "claude", "label": label, "waited_for_limit": LIMIT_WAIT})
+            run.save()
+            time.sleep(LIMIT_WAIT)
+            cmd = set_model(cmd, model)   # back to the first choice after the wait
         sid = d.get("session_id") if d else None
         if sid and (d.get("num_turns") or 0) > 1:
             if "--resume" in cmd:

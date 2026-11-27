@@ -39,6 +39,7 @@ timeout = 1800
 
 [implementer]
 # model = "opus"   # unset: the Claude Code default
+fallback_model = "opus"   # used when the first choice is out of capacity
 timeout = 7200
 allowed_tools = [
   "Read", "Edit", "Write", "Glob", "Grep",
