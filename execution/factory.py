@@ -44,7 +44,7 @@ STATE = Path(os.environ.get("VAMPIRE_STATE", Path.home() / ".local/share/vampire
 STEPS = ["intake", "workspace", "spec", "holdout", "implement", "verify", "ship", "deploy", "report"]
 MAX_FIX_ROUNDS = 2
 # Text Claude Code prints when the subscription or the API has no capacity left for now.
-LIMIT = re.compile(r"usage limit|hit your limit|limit reached|limit will reset|rate.?limit|overloaded|out of extra usage|\b529\b", re.I)
+LIMIT = re.compile(r"usage limit|hit your (?:[\w-]+ )*limit|limit reached|limit will reset|rate.?limit|overloaded|out of extra usage|\b529\b", re.I)
 LIMIT_WAIT, LIMIT_TRIES = 1200, 90   # check every 20 minutes for up to 30 hours
 
 
