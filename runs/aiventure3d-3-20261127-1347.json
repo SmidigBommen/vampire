@@ -1,0 +1,33 @@
+{
+ "run": "aiventure3d-3-20261127-1347",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/3",
+ "status": "escalated",
+ "started": "2026-11-27 13:47:09",
+ "ended": "2026-11-27 14:11:19",
+ "seconds": {
+  "workspace": 2,
+  "spec": 543,
+  "holdout": 661,
+  "implement": 240
+ },
+ "cost_usd": {
+  "claude": 7.93,
+  "pi": 0.22
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 1
+ },
+ "verify": {},
+ "ship": null,
+ "deploy": null,
+ "lessons": [
+  {
+   "id": "2026-11-27-unsummarised-implement",
+   "step": "implement",
+   "repeat": false
+  }
+ ],
+ "stopped_because": "Step `implement` crashed:\n\n```\nclaude implement failed: success You've hit your 5-hour limit \u00b7 resets 4:10pm (Europe/Oslo)\n```"
+}
