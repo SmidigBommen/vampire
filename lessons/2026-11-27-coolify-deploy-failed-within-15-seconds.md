@@ -1,12 +1,11 @@
 target: aiventure3d
 role: implement
 step: deploy
-seen: 2
+seen: 1
 first_run: aiventure3d-1-20261127-1144
 ---
-**What happened:** The deploy of SmidigBommen/3d-aiventure@main (commit 4eece86) to Coolify application aiventure3d failed 15 seconds after it started. Deployment kep4qlooiji66zqahtq6h1mu was queued, then marked failed, while the running app stayed healthy at https://aiventure3d.smidigbommen.no, so the previous version kept serving traffic.
+**What happened:** The image build of commit 4eece86 failed on the server 15 seconds after it started, and the merge was reverted. `client/src/world/testkit.ts` imports `../../../json/campaign.json`; the client stage of the Dockerfile copied only `client/`, and `pnpm build` type-checks the tests, so the import could not be resolved in the image. Every local gate had passed because the file exists in the checkout.
 
-**Cause:** unknown. The evidence shows only the status sequence and the 15-second failure. It contains no build log or error message, so the reason for the failure is not shown.
+**Cause:** The Dockerfile listed the build inputs by hand and nothing built the image before the merge.
 
-**Rule:** After pushing, check the Coolify deployment for the pushed commit (with the coolify skill) and do not report the deploy as done until its status is finished; if it shows failed, read the build log and fix the cause before reporting.
-- Seen again in aiventure3d-1-20261127-1144, step deploy: Commit 4eece86 was pushed, but Coolify shows aiventure3d (gdnq0kjo5jprcgr8vdi1f92h) running commit 1d5f182 (running:healthy). The latest deployment, dqvlulnwdr9pyhyir2y2wyil, finished at 2026-11-27T11:36:15Z for 1d5f182. The deploy step was reported as done, but 4eece86 is not the commit serving https://aiventure3d.smidigbommen.no.
+**Rule:** When code imports or reads a file from a folder the Dockerfile stage does not copy, add the COPY line in the same change, and run `podman build -q -t aiventure3d-gate .` before reporting done.

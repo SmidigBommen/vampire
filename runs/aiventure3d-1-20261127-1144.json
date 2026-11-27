@@ -2,9 +2,9 @@
  "run": "aiventure3d-1-20261127-1144",
  "target": "aiventure3d",
  "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/1",
- "status": "escalated",
+ "status": "shipped",
  "started": "2026-11-27 11:44:06",
- "ended": "2026-11-27 12:39:18",
+ "ended": "2026-11-27 12:43:21",
  "seconds": {
   "workspace": 2,
   "spec": 264,
@@ -17,7 +17,8 @@
   "review-1": 722,
   "verify": 1528,
   "ship": 12,
-  "deploy": 175
+  "deploy": 175,
+  "report": 3
  },
  "cost_usd": {
   "claude": 16.5,
@@ -25,7 +26,8 @@
  },
  "human_touches": {
   "intake": 1,
-  "escalations": 2
+  "escalations": 2,
+  "orchestrator": 1
  },
  "verify": {
   "sha": "6165552de1c8971b94db663286536230dddaf9ed",
@@ -37,7 +39,11 @@
   "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/13",
   "merge_sha": "4eece864347dcf1cb97aaeef0687c29661bae851"
  },
- "deploy": null,
+ "deploy": {
+  "deployed": "c7f539e",
+  "rolled_back": true,
+  "relanded_by_hand": "88aff72 fixes the Dockerfile, c7f539e reapplies the merge; deployed and checked in a browser"
+ },
  "lessons": [
   {
    "id": "2026-11-27-gate-opening-width-wrong-orientation",
@@ -60,5 +66,5 @@
    "repeat": false
   }
  ],
- "stopped_because": "Step `deploy` crashed:\n\n```\ncommand failed (128): ['git', 'worktree', 'add', '--detach', '/var/home/neo/.local/share/vampire/work/aiventure3d-1-20261127-1144/rollback', 'origin/main']\nPreparing worktree (detached HEAD 1d5f182)\nfatal: '/var/home/neo/.local/share/vampire/work/aiventure3d-1-20261127-1144/rollback' already exists\n```"
+ "stopped_because": null
 }
