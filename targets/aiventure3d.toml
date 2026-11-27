@@ -23,6 +23,8 @@ The hidden tests are run with one command that runs both kinds: pytest over the 
 [gates]
 build = "pnpm build"
 test = "uv run pytest -q && pnpm test"
+# The production image must build: a file the build needs but the Dockerfile does not copy fails only here.
+image = "podman build -q -t aiventure3d-gate . > /dev/null"
 
 [smoke]
 serve = "AIVENTURE_DATA=$(mktemp -d) uv run uvicorn web.app:app --port {port}"
@@ -42,7 +44,7 @@ allowed_tools = [
   "Read", "Edit", "Write", "Glob", "Grep",
   "Bash(pnpm:*)", "Bash(node:*)", "Bash(npx:*)", "Bash(uv run:*)", "Bash(uv sync:*)", "Bash(uv add:*)", "Bash(uv lock:*)",
   "Bash(ls:*)", "Bash(cat:*)", "Bash(mkdir:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(python3:*)",
-  "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git mv:*)", "Bash(git rm:*)",
+  "Bash(podman build:*)", "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git mv:*)", "Bash(git rm:*)",
 ]
 
 [verifier]

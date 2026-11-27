@@ -639,6 +639,9 @@ def prod_check(run: Run, sha: str, label: str) -> str | None:
 
 def step_deploy(run: Run) -> dict:
     dep, sha = run.cfg["deploy"], run.data("ship")["merge_sha"]
+    if run.s.get("reverted"):   # a resumed run must not deploy the revert and then "roll back" a second time
+        raise Stop(f"The merge {sha[:7]} was already reverted by this run ({run.s['reverted'][:7]}). Fix the cause, land the change again "
+                   "by hand, then mark the deploy step as done in the run state or start a new run.")
     rc, out = sh(["coolify", "deploy", dep["coolify_app"], "--timeout", "1200"], timeout=1300, log=run.log("deploy.log"))
     err = f"deployment failed:\n{tail(out, 20)}" if rc != 0 else prod_check(run, sha, "after")
     if not err:
@@ -648,10 +651,15 @@ def step_deploy(run: Run) -> dict:
     base = run.cfg.get("base", "main")
     rb = STATE / "work" / run.id / "rollback"
     sh(["git", "fetch", "origin", base], cwd=run.repo, check=True)
+    if rb.exists():
+        sh(["git", "worktree", "remove", "--force", str(rb)], cwd=run.repo)
+        shutil.rmtree(rb, ignore_errors=True)
     sh(["git", "worktree", "add", "--detach", str(rb), f"origin/{base}"], cwd=run.repo, check=True)
     sh(["git", "revert", "--no-edit", sha], cwd=rb, check=True)
     sh(["git", "push", "origin", f"HEAD:{base}"], cwd=rb, check=True)
     _, rsha = sh(["git", "rev-parse", "HEAD"], cwd=rb, check=True)
+    run.s["reverted"] = rsha.strip()
+    run.save()
     rc, out = sh(["coolify", "deploy", dep["coolify_app"], "--timeout", "1200"], timeout=1300, log=run.log("rollback.log"))
     rerr = f"rollback deployment failed:\n{tail(out, 20)}" if rc != 0 else prod_check(run, rsha.strip(), "rollback")
     raise Stop(f"Production failed after deploying {sha[:7]} and the merge was reverted ({rsha.strip()[:7]}).\n\n{err}\n\n"
@@ -771,14 +779,15 @@ def cmd_queue(a) -> int:
             continue
         last = runs[-1] if runs else None
         # A run that stopped for any reason other than used-up fix rounds is worth one automatic resume.
-        resume = last["run"] if last and "fix rounds" not in (last.get("stopped_because") or "") and not a.fresh else None
+        final = lambda r: r.get("reverted") or "fix rounds" in (r.get("stopped_because") or "")   # a resume cannot help these
+        resume = last["run"] if last and not final(last) and not a.fresh else None
         for attempt in (1, 2):
             say(f"queue: issue {issue}, {'resuming ' + resume if resume else 'new run'}")
             rc = cmd_run(argparse.Namespace(target=a.target, issue=issue, resume=resume, until=None))
             if rc == 0:
                 break
             last = runs_for(a.target, issue)[-1]
-            if attempt == 2 or "fix rounds" in (last.get("stopped_because") or ""):
+            if attempt == 2 or final(last):
                 say(f"queue: stopped at issue {issue} ({last['run']}); not started: {a.issues[a.issues.index(issue) + 1:]}")
                 return 1
             resume = last["run"]
