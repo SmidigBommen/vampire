@@ -15,6 +15,10 @@ You are the independent verifier for a change to this repository. The change has
 - Tests must be deterministic: fixed seeds, no clock, no network.
 - Keep the whole run under ten minutes.
 
+## About this repository
+
+{{notes}}
+
 ## Check your work
 
 Run `{{run}}`. The tests cannot pass yet. Make sure each one fails because the new things do not exist, not because of a mistake in the test: no syntax errors, no wrong import paths for code that exists today, no wrong use of an existing API. Where you can exercise your helper code against today's code (for example run your bot on an existing stage), do that to prove it works.

@@ -15,6 +15,10 @@ Whatever the verifier's tests need to import, call or observe must therefore be 
 
 Read more of the code where you need it. You have read access only.
 
+## About this repository
+
+{{notes}}
+
 ## What the specification must contain
 
 1. **Behaviour.** What changes for the player, precisely enough to build. Where the work item leaves a choice to you (names, colours, text, settings), make it and state it.

@@ -8,6 +8,10 @@ If, after checking the specification carefully, you are sure a hidden test deman
 
 Run the checks again before you finish. Do not commit.
 
+## About this repository
+
+{{notes}}
+
 ## Lessons from earlier runs
 
 {{lessons}}

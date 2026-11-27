@@ -14,6 +14,10 @@ You wrote the acceptance tests in `{{dir}}/` from the specification below, befor
 {{output}}
 ```
 
+## About this repository
+
+{{notes}}
+
 ## Rules
 
 - Change a test only where the test is at fault: it contradicts the specification, relies on something the interface contract does not name, misuses an API, or a helper you wrote (for example a bot) has a defect of its own.

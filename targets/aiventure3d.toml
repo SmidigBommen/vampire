@@ -1,0 +1,55 @@
+# AIVentures in first-person 3D, live at https://aiventure3d.smidigbommen.no
+repo = "SmidigBommen/3d-aiventure"
+path = "~/dev/3d-aiventure"
+base = "main"
+install = "uv sync --frozen -q && pnpm install --frozen-lockfile --prefer-offline"
+# Files the spec writer should read first.
+context = "CLAUDE.md, web/app.py, web/game_session.py, web/routes/game.py, web/routes/battle.py, json/campaign.json, client/src/main.ts, execution/smoke.mjs, test/test_web_flow.py"
+# Left out of the diff the reviewer reads.
+review_exclude = ["pnpm-lock.yaml", "uv.lock", "client/public/models/*"]
+
+# Given to every agent, under "About this repository".
+notes = """
+The game has a Python server (FastAPI, the rules engine, a JSON API under /api) and a TypeScript client (Three.js). CLAUDE.md in the repository root states the decisions every work item follows; read it first.
+
+Acceptance tests can reach two things and nothing else:
+- The server, through `fastapi.testclient.TestClient` on `web.app.app`, in pytest files named `test_*.py`. Follow the fixtures in `test/test_web_flow.py`: sessions go to a temporary folder by `monkeypatch.setattr(game_session, "SESSIONS_DIR", tmp_path)`, a character is created through the classic `/character/...` routes, and dice are fixed by patching `Dice.roll_d20` / `Dice.roll` or seeding `random`.
+- Client modules that import neither `three` nor anything from the DOM, in Vitest files named `*.test.ts` that import them by relative path (from the hidden test folder `holdout/`, the client source is `../client/src/...`).
+What happens on screen (rendering, pointer lock, animation) cannot be reached by acceptance tests. A specification therefore puts everything that can be decided without a renderer into the server or into pure client modules with exact names, and states what must be visible as named steps with screenshots that the implementer adds to `execution/smoke.mjs`.
+The hidden tests are run with one command that runs both kinds: pytest over the `test_*.py` files and Vitest over the `*.test.ts` files in `holdout/`.
+"""
+
+# Run in this order in the implementer's worktree. A failure of the first one skips the rest.
+[gates]
+build = "pnpm build"
+test = "uv run pytest -q && pnpm test"
+
+[smoke]
+serve = "AIVENTURE_DATA=$(mktemp -d) uv run uvicorn web.app:app --port {port}"
+run = "node execution/smoke.mjs --url {url} --out {out}"
+timeout = 900
+
+[holdout]
+dir = "holdout"
+suffixes = [".test.ts", ".py"]
+run = "{factory}/execution/holdout_run.py --dir holdout --out {out}"
+timeout = 1800
+
+[implementer]
+# model = "opus"   # unset: the Claude Code default
+timeout = 7200
+allowed_tools = [
+  "Read", "Edit", "Write", "Glob", "Grep",
+  "Bash(pnpm:*)", "Bash(node:*)", "Bash(npx:*)", "Bash(uv run:*)", "Bash(uv sync:*)", "Bash(uv add:*)", "Bash(uv lock:*)",
+  "Bash(ls:*)", "Bash(cat:*)", "Bash(mkdir:*)", "Bash(cp:*)", "Bash(mv:*)", "Bash(rm:*)", "Bash(python3:*)",
+  "Bash(git status:*)", "Bash(git diff:*)", "Bash(git log:*)", "Bash(git mv:*)", "Bash(git rm:*)",
+]
+
+[verifier]
+model = "openrouter/deepseek/deepseek-v4.1-flash-1017"
+thinking = "high"
+extensions = ["~/dev/agent-harness-alfredo/extensions/guardrails.ts"]
+
+[deploy]
+coolify_app = "aiventure3d"
+url = "https://aiventure3d.smidigbommen.no"

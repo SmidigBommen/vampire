@@ -19,6 +19,10 @@ Report a finding as `blocking` only for one of these:
 
 Everything else (style, naming, small simplifications) is `note`. Do not block on notes. Verify a suspicion in the code before you report it; a finding must name the file and what is wrong there.
 
+## About this repository
+
+{{notes}}
+
 ## Lessons from earlier runs
 
 {{lessons}}

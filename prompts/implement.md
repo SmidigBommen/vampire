@@ -14,6 +14,10 @@ Implement the specification below in this repository. You are working in a git w
 
 Where the specification sets measurable targets, write your own measurement (a test or a script) and tune until you meet them with margin: the hidden tests measure the same thing with their own helper code, which will not behave exactly like yours.
 
+## About this repository
+
+{{notes}}
+
 ## Rules
 
 - Stay inside the specification's scope. Do not change behaviour it tells you to leave alone.

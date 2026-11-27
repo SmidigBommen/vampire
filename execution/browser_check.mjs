@@ -15,7 +15,7 @@ if (!url) {
 const cache = join(homedir(), '.cache', 'ms-playwright');
 const dir = readdirSync(cache).filter((d) => /^chromium-\d+$/.test(d)).sort().pop();
 const sub = readdirSync(join(cache, dir)).find((d) => d.startsWith('chrome'));
-const browser = await chromium.launch({ executablePath: join(cache, dir, sub, 'chrome'), args: ['--autoplay-policy=no-user-gesture-required'] });
+const browser = await chromium.launch({ executablePath: join(cache, dir, sub, 'chrome'), args: ['--autoplay-policy=no-user-gesture-required', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 852, height: 480 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(`page error: ${e}`));

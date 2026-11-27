@@ -16,6 +16,7 @@ Examples:
   factory run fighter --issue 1
   factory run fighter --issue 1 --until holdout     stop after a step
   factory run fighter --resume fighter-1-20261126-1700
+  factory queue aiventure3d 1 2 3                   several issues in order, unattended
   factory status
   factory lessons --target fighter
 """
@@ -42,6 +43,9 @@ ROOT = Path(__file__).resolve().parent.parent
 STATE = Path(os.environ.get("VAMPIRE_STATE", Path.home() / ".local/share/vampire")).resolve()
 STEPS = ["intake", "workspace", "spec", "holdout", "implement", "verify", "ship", "deploy", "report"]
 MAX_FIX_ROUNDS = 2
+# Text Claude Code prints when the subscription or the API has no capacity left for now.
+LIMIT = re.compile(r"usage limit|hit your limit|limit reached|limit will reset|rate.?limit|overloaded|out of extra usage|\b529\b", re.I)
+LIMIT_WAIT, LIMIT_TRIES = 1200, 90   # check every 20 minutes for up to 30 hours
 
 
 class Stop(Exception):
@@ -150,6 +154,7 @@ class Run:
 
 def render(name: str, **values: str) -> str:
     text = (ROOT / "prompts" / f"{name}.md").read_text()
+    values.setdefault("notes", "(none)")
     for k, v in values.items():
         text = text.replace("{{" + k + "}}", v)
     left = re.findall(r"\{\{(\w+)\}\}", text)
@@ -173,11 +178,30 @@ def claude(run: Run, label: str, prompt: str, cwd: Path, tools: list[str], schem
         cmd += ["--model", model]
     (run.log(f"{label}.prompt.md")).parent.mkdir(parents=True, exist_ok=True)
     run.log(f"{label}.prompt.md").write_text(prompt)
-    rc, out = sh(cmd, cwd=cwd, timeout=timeout, stdin=prompt)
-    run.log(f"{label}.out.json").write_text(out)
-    try:
-        d = json.loads(out[out.index("{"):])
-    except ValueError:
+    for attempt in range(LIMIT_TRIES + 1):
+        rc, out = sh(cmd, cwd=cwd, timeout=timeout, stdin=prompt)
+        run.log(f"{label}.out.json").write_text(out)
+        try:
+            d = json.loads(out[out.index("{"):])
+        except ValueError:
+            d = None
+        failed = d is None or rc != 0 or d.get("is_error")
+        said = str(d.get("result")) if d else tail(out, 10)
+        if not (failed and LIMIT.search(said[:2000]) and attempt < LIMIT_TRIES):
+            break
+        # Out of capacity: wait and go on, in the same session when there is one, so finished work is kept.
+        say(f"claude {label}: no capacity ({' '.join(said.split())[:120]}); waiting {LIMIT_WAIT // 60} min (attempt {attempt + 1})")
+        run.s["events"].append({"at": now(), "agent": "claude", "label": label, "waited_for_limit": LIMIT_WAIT})
+        run.save()
+        time.sleep(LIMIT_WAIT)
+        sid = d.get("session_id") if d else None
+        if sid and (d.get("num_turns") or 0) > 1:
+            if "--resume" in cmd:
+                cmd[cmd.index("--resume") + 1] = sid
+            else:
+                cmd += ["--resume", sid]
+            prompt = "You were stopped by a usage limit before finishing. Continue the task you were given and finish it."
+    if d is None:
         raise RuntimeError(f"claude {label}: no JSON result (exit {rc}): {tail(out, 10)}")
     run.s["cost"]["claude"] += d.get("total_cost_usd") or 0
     denials = [x.get("tool_input", {}).get("command") or x.get("tool_name") for x in d.get("permission_denials", [])]
@@ -320,7 +344,7 @@ SPEC_SCHEMA = {"type": "object", "required": ["spec_md"], "properties": {"spec_m
 
 
 def step_spec(run: Run) -> dict:
-    prompt = render("spec", issue=(run.dir / "issue.md").read_text(), context=run.cfg.get("context", ""),
+    prompt = render("spec", notes=run.cfg.get("notes", "(none)"), issue=(run.dir / "issue.md").read_text(), context=run.cfg.get("context", ""),
                     lessons=lessons_for(run.target_name, "spec"))
     d = claude(run, "spec", prompt, cwd=run.impl, tools=["Read", "Glob", "Grep"], schema=SPEC_SCHEMA,
                model=run.cfg.get("implementer", {}).get("model"), timeout=1800)
@@ -348,9 +372,9 @@ def collect_holdout(run: Run) -> list[str]:
 
 def step_holdout(run: Run) -> dict:
     hd = run.cfg["holdout"]
-    prompt = render("holdout", spec=(run.dir / "spec.md").read_text(), dir=hd["dir"], run=hd["run"].replace("{out}", "/tmp/holdout.json"),
+    prompt = render("holdout", notes=run.cfg.get("notes", "(none)"), spec=(run.dir / "spec.md").read_text(), dir=hd["dir"], run=hd["run"].replace("{factory}", str(ROOT)).replace("{out}", "/tmp/holdout.json"),
                     lessons=lessons_for(run.target_name, "holdout"))
-    pi(run, "holdout", prompt, cwd=run.holdout_ws)
+    pi(run, "holdout", prompt, cwd=run.holdout_ws, timeout=run.cfg["verifier"].get("timeout", 3600))
     return {"files": collect_holdout(run)}
 
 
@@ -375,10 +399,11 @@ def commit(run: Run, message: str) -> str:
 
 def step_implement(run: Run) -> dict:
     impl = run.cfg["implementer"]
-    prompt = render("implement", spec=(run.dir / "spec.md").read_text(), lessons=lessons_for(run.target_name, "implement"),
+    prompt = render("implement", notes=run.cfg.get("notes", "(none)"), spec=(run.dir / "spec.md").read_text(), lessons=lessons_for(run.target_name, "implement"),
                     checks="\n".join(f"- `{c}`" for c in run.cfg["gates"].values()))
     with run.hidden_locked():
-        d = claude(run, "implement", prompt, cwd=run.impl, tools=impl["allowed_tools"], schema=IMPL_SCHEMA, model=impl.get("model"))
+        d = claude(run, "implement", prompt, cwd=run.impl, tools=impl["allowed_tools"], schema=IMPL_SCHEMA, model=impl.get("model"),
+                   timeout=impl.get("timeout", 5400))
     sha = commit(run, f"{run.data('intake')['title']}\n\nImplemented by the factory, run {run.id}.")
     if sha == run.data("workspace")["base_sha"]:
         raise RuntimeError("the implementer changed nothing")
@@ -434,7 +459,7 @@ def run_holdout(run: Run, sha: str, n: int) -> dict:
     sh(run.cfg["install"], cwd=ws, check=True)
     shutil.copytree(run.holdout_tests, dest)
     out_file.unlink(missing_ok=True)
-    rc, out = sh(hd["run"].replace("{out}", str(out_file)), cwd=ws, timeout=hd.get("timeout", 1800))
+    rc, out = sh(hd["run"].replace("{factory}", str(ROOT)).replace("{out}", str(out_file)), cwd=ws, timeout=hd.get("timeout", 1800))
     (run.hidden / f"holdout-{n}.log").write_text(out)
     shutil.rmtree(dest)
     if not out_file.exists():
@@ -486,7 +511,7 @@ def review(run: Run, n: int, sha: str) -> dict:
     (run.dir / f"diff-{n}.patch").write_text(diff)
     out = ws / "review.json"
     out.unlink(missing_ok=True)
-    pi(run, f"review-{n}", render("review", spec=(run.dir / "spec.md").read_text(), diff=str(run.dir / f"diff-{n}.patch"),
+    pi(run, f"review-{n}", render("review", notes=run.cfg.get("notes", "(none)"), spec=(run.dir / "spec.md").read_text(), diff=str(run.dir / f"diff-{n}.patch"),
                                   lessons=lessons_for(run.target_name, "review")), cwd=ws, timeout=1800)
     if not out.exists():
         raise RuntimeError("the reviewer wrote no review.json")
@@ -507,9 +532,9 @@ def amend(run: Run, n: int, sha: str, disputes: list[dict], raw: str) -> dict:
     backup = run.hidden / f"tests-before-amend-{n}"
     shutil.copytree(run.holdout_tests, backup, dirs_exist_ok=True)
     out = ws / "amend.json"
-    pi(run, f"amend-{n}", render("amend", spec=(run.dir / "spec.md").read_text(), dir=hd["dir"],
+    pi(run, f"amend-{n}", render("amend", notes=run.cfg.get("notes", "(none)"), spec=(run.dir / "spec.md").read_text(), dir=hd["dir"],
                                  disputes="\n".join(f"- {d['about']}: {d['reason']}" for d in disputes), output=raw,
-                                 run=hd["run"].replace("{out}", "/tmp/holdout.json")), cwd=ws)
+                                 run=hd["run"].replace("{factory}", str(ROOT)).replace("{out}", "/tmp/holdout.json")), cwd=ws)
     d = json.loads(out.read_text()) if out.exists() else {"changed": False, "reason": "the verifier wrote no amend.json"}
     out.unlink(missing_ok=True)
     collect_holdout(run)
@@ -557,9 +582,10 @@ def step_verify(run: Run) -> dict:
 
 def fix(run: Run, n: int, session: str, problem: str) -> dict:
     impl = run.cfg["implementer"]
-    prompt = render("fix", problem=problem, round=str(n), rounds=str(MAX_FIX_ROUNDS), lessons=lessons_for(run.target_name, "implement"))
+    prompt = render("fix", notes=run.cfg.get("notes", "(none)"), problem=problem, round=str(n), rounds=str(MAX_FIX_ROUNDS), lessons=lessons_for(run.target_name, "implement"))
     with run.hidden_locked():
-        d = claude(run, f"fix-{n}", prompt, cwd=run.impl, tools=impl["allowed_tools"], schema=IMPL_SCHEMA, resume=session, model=impl.get("model"))
+        d = claude(run, f"fix-{n}", prompt, cwd=run.impl, tools=impl["allowed_tools"], schema=IMPL_SCHEMA, resume=session, model=impl.get("model"),
+                   timeout=impl.get("timeout", 5400))
     sha = commit(run, f"Fix round {n}\n\n{d['structured']['summary'][:400]}")
     return {"sha": sha, "summary": d["structured"]["summary"], "disputes": d["structured"]["disputes"]}
 
@@ -693,6 +719,7 @@ def escalate(run: Run, reason: str) -> None:
 def cmd_run(a) -> int:
     if a.resume:
         run = Run(a.resume, a.resume.split("-")[0] if not a.target else a.target)
+        a.issue = a.issue or (run.s["steps"].get("intake", {}).get("data") or {}).get("issue")
         run.s["status"] = "running"
         run.s.pop("stopped_because", None)
     else:
@@ -726,6 +753,40 @@ def cmd_run(a) -> int:
     return 0 if run.s["status"] == "shipped" else 1
 
 
+def runs_for(target: str, issue: int) -> list[dict]:
+    """State of every run of this issue, oldest first."""
+    out = []
+    for p in sorted((STATE / "runs").glob(f"{target}-{issue}-*/state.json"), key=lambda p: p.stat().st_mtime):
+        with contextlib.suppress(ValueError):
+            out.append(json.loads(p.read_text()))
+    return out
+
+
+def cmd_queue(a) -> int:
+    """Runs the issues one after another. Stops at the first one that does not ship."""
+    for issue in a.issues:
+        runs = runs_for(a.target, issue)
+        if any(r["status"] == "shipped" for r in runs):
+            say(f"issue {issue}: already shipped, skipped")
+            continue
+        last = runs[-1] if runs else None
+        # A run that stopped for any reason other than used-up fix rounds is worth one automatic resume.
+        resume = last["run"] if last and "fix rounds" not in (last.get("stopped_because") or "") and not a.fresh else None
+        for attempt in (1, 2):
+            say(f"queue: issue {issue}, {'resuming ' + resume if resume else 'new run'}")
+            rc = cmd_run(argparse.Namespace(target=a.target, issue=issue, resume=resume, until=None))
+            if rc == 0:
+                break
+            last = runs_for(a.target, issue)[-1]
+            if attempt == 2 or "fix rounds" in (last.get("stopped_because") or ""):
+                say(f"queue: stopped at issue {issue} ({last['run']}); not started: {a.issues[a.issues.index(issue) + 1:]}")
+                return 1
+            resume = last["run"]
+            time.sleep(60)
+    say("queue: every issue shipped")
+    return 0
+
+
 def cmd_status(a) -> int:
     runs = sorted((STATE / "runs").glob("*/state.json"), key=lambda p: p.stat().st_mtime)
     if a.run:
@@ -755,6 +816,12 @@ def main() -> int:
     r.add_argument("--resume", metavar="RUN", help="continue a run after its last finished step")
     r.add_argument("--until", choices=STEPS, help="stop after this step")
     r.set_defaults(fn=cmd_run)
+    q = sub.add_parser("queue", help="take several issues to production in order; stops at the first that does not ship "
+                                     "(WRITES like run). Shipped issues are skipped, a crashed run is resumed once")
+    q.add_argument("target")
+    q.add_argument("issues", nargs="+", type=int)
+    q.add_argument("--fresh", action="store_true", help="start new runs instead of resuming unfinished ones")
+    q.set_defaults(fn=cmd_queue)
     s = sub.add_parser("status", help="show the latest run, one run, or all runs")
     s.add_argument("run", nargs="?")
     s.add_argument("--all", action="store_true")

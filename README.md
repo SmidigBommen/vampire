@@ -41,6 +41,7 @@ It may fix a faulty test but not lower a threshold. The pull request says when t
 execution/factory.py run fighter --issue 1           # WRITES: pushes, merges, deploys
 execution/factory.py run fighter --issue 1 --until verify
 execution/factory.py run --resume fighter-1-20261126-1700
+execution/factory.py queue aiventure3d 1 2 3         # several issues in order, unattended
 execution/factory.py status [--all]
 execution/factory.py lessons [--target fighter] [--role implement]
 ```
@@ -53,6 +54,7 @@ the subscription; Pi bills the provider in the target file.
 ```
 execution/factory.py        the driver
 execution/browser_check.mjs production check: loads the site, fails on any error
+execution/holdout_run.py    runs pytest and Vitest holdout tests and writes one Jest-format result
 targets/<name>.toml         one file per target repository: commands, gates, models, deployment
 prompts/                    one prompt per agent role
 lessons/                    one file per recorded error
@@ -64,5 +66,12 @@ Working state, logs and worktrees are in `~/.local/share/vampire/` and are not c
 ## Adding a target
 
 Copy `targets/fighter.toml`. The target needs a build command, a test command, a smoke test that
-runs against a local server, a test runner that writes JSON in Jest's result format (Vitest does),
-and a Coolify application.
+runs against a local server, a test runner that writes JSON in Jest's result format (Vitest does;
+`execution/holdout_run.py` does it for pytest, Vitest or both), and a Coolify application
+(`coolify create`). `notes` in the target file is given to every agent.
+
+## Running unattended
+
+`factory queue` runs issues in order and stops at the first that does not ship. A run that crashed
+is resumed once; a run that used up its fix rounds is not. When Claude Code reports a usage limit,
+the driver waits and continues the same session, checking every 20 minutes for up to 30 hours.
