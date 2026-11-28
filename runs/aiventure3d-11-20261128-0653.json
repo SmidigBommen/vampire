@@ -1,0 +1,52 @@
+{
+ "run": "aiventure3d-11-20261128-0653",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/11",
+ "status": "shipped",
+ "started": "2026-11-28 06:53:35",
+ "ended": "2026-11-28 11:41:36",
+ "seconds": {
+  "workspace": 2,
+  "spec": 515,
+  "holdout": 529,
+  "implement": 14450,
+  "gates-0": 610,
+  "fix-1": 175,
+  "gates-1": 590,
+  "review-1": 325,
+  "verify": 1712,
+  "ship": 13,
+  "deploy": 57,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 19.48,
+  "pi": 0.24
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "fa10f75f6def931a7c938483ca01ab3371687dce",
+  "fix_rounds": 1,
+  "holdout": "45 of 45",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/27",
+  "merge_sha": "487be103c4dd821205584d0b6df143fda5305495"
+ },
+ "deploy": {
+  "deployed": "487be103c4dd821205584d0b6df143fda5305495",
+  "rolled_back": false
+ },
+ "lessons": [
+  {
+   "id": "2026-11-28-remove-listed-paths-including-directories",
+   "step": "verify-0",
+   "repeat": false
+  }
+ ],
+ "stopped_because": null
+}
