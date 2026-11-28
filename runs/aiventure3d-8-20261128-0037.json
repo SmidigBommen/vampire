@@ -1,0 +1,45 @@
+{
+ "run": "aiventure3d-8-20261128-0037",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/8",
+ "status": "shipped",
+ "started": "2026-11-28 00:37:20",
+ "ended": "2026-11-28 01:44:07",
+ "seconds": {
+  "intake": 1,
+  "workspace": 2,
+  "spec": 338,
+  "holdout": 521,
+  "implement": 2327,
+  "gates-0": 450,
+  "review-0": 186,
+  "verify": 637,
+  "ship": 12,
+  "deploy": 57,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 14.83,
+  "pi": 0.19
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "21d0f095078315b89af584e688597abc04cf72f4",
+  "fix_rounds": 0,
+  "holdout": "27 of 27",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/24",
+  "merge_sha": "5459c0402eb53eb136032a7b1cba987fd5ff42cd"
+ },
+ "deploy": {
+  "deployed": "5459c0402eb53eb136032a7b1cba987fd5ff42cd",
+  "rolled_back": false
+ },
+ "lessons": [],
+ "stopped_because": null
+}
