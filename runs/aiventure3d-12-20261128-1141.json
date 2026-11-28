@@ -2,9 +2,9 @@
  "run": "aiventure3d-12-20261128-1141",
  "target": "aiventure3d",
  "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/12",
- "status": "escalated",
+ "status": "shipped",
  "started": "2026-11-28 11:41:38",
- "ended": "2026-11-28 16:08:28",
+ "ended": "2026-11-28 16:42:58",
  "seconds": {
   "intake": 1,
   "workspace": 2,
@@ -16,20 +16,35 @@
   "gates-1": 750,
   "fix-2": 394,
   "gates-2": 736,
-  "verify": 747
+  "review-2": 665,
+  "verify": 1401,
+  "ship": 12,
+  "deploy": 100,
+  "report": 3
  },
  "cost_usd": {
   "claude": 47.41,
-  "pi": 0.27
+  "pi": 0.34
  },
  "human_touches": {
   "intake": 1,
   "escalations": 3,
   "manual_fix": 1
  },
- "verify": {},
- "ship": null,
- "deploy": null,
+ "verify": {
+  "sha": "295a56b517df83c8a66cfef0f7afe90f1ade7403",
+  "fix_rounds": 2,
+  "holdout": "18 of 18",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/31",
+  "merge_sha": "065e6d15ddf7eb0c3a94cb6730b9eed11eda2143"
+ },
+ "deploy": {
+  "deployed": "065e6d15ddf7eb0c3a94cb6730b9eed11eda2143",
+  "rolled_back": false
+ },
  "lessons": [
   {
    "id": "2026-11-28-smoke-gate-frame-time-town-dungeon",
@@ -57,5 +72,5 @@
    "repeat": true
   }
  ],
- "stopped_because": "Still failing after 2 fix rounds.\n\n### Gate `smoke` failed\n\n```\nframe time town: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\nframe time wilderness: p95 50.1 ms, baseline 50.0 ms (4fbc1f5), limit 60.0 ms: ok\nframe time dungeon: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\nframe time fight: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\ntour: 51 areas and 9 bosses in 188 s\nframe time dungeon: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\n```"
+ "stopped_because": null
 }
