@@ -1,0 +1,61 @@
+{
+ "run": "aiventure3d-9-20261128-0144",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/9",
+ "status": "shipped",
+ "started": "2026-11-28 01:44:09",
+ "ended": "2026-11-28 03:45:19",
+ "seconds": {
+  "workspace": 2,
+  "spec": 357,
+  "holdout": 484,
+  "implement": 1940,
+  "gates-0": 423,
+  "review-0": 331,
+  "fix-1": 447,
+  "gates-1": 399,
+  "review-1": 1314,
+  "fix-2": 717,
+  "gates-2": 382,
+  "review-2": 399,
+  "verify": 4429,
+  "ship": 11,
+  "deploy": 42,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 37.39,
+  "pi": 0.57
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "26ba3431381f2b980f76e20c1b21ef3c76792f26",
+  "fix_rounds": 2,
+  "holdout": "37 of 37",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/25",
+  "merge_sha": "4fbc1f57fd6709f594d3867869aced378c09c4a0"
+ },
+ "deploy": {
+  "deployed": "4fbc1f57fd6709f594d3867869aced378c09c4a0",
+  "rolled_back": false
+ },
+ "lessons": [
+  {
+   "id": "2026-11-28-async-answers-during-ui-transitions",
+   "step": "verify-0",
+   "repeat": false
+  },
+  {
+   "id": "2026-11-28-pending-screen-dead-title-buttons",
+   "step": "verify-1",
+   "repeat": false
+  }
+ ],
+ "stopped_because": null
+}
