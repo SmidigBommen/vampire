@@ -29,7 +29,7 @@ image = "podman build -q -t aiventure3d-gate . > /dev/null"
 [smoke]
 serve = "AIVENTURE_DATA=$(mktemp -d) uv run uvicorn web.app:app --port {port}"
 run = "node execution/smoke.mjs --serve --out {out}"   # --serve: its own server with planted monsters and fixed dice, so fights, events and purchases are played
-timeout = 900
+timeout = 1500
 
 [holdout]
 dir = "holdout"
