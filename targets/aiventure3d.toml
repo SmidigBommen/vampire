@@ -4,7 +4,7 @@ path = "~/dev/3d-aiventure"
 base = "main"
 install = "uv sync --frozen -q && pnpm install --frozen-lockfile --prefer-offline"
 # Files the spec writer should read first.
-context = "CLAUDE.md, web/app.py, web/game_session.py, web/routes/game.py, web/routes/battle.py, json/campaign.json, client/src/main.ts, execution/smoke.mjs, test/test_web_flow.py"
+context = "CLAUDE.md, MODELS.md, web/app.py, web/api/world.py, json/campaign.json, client/src/main.ts, client/src/world/dressing.ts, client/src/world/areaScene.ts, client/src/world/modelLoader.ts, client/public/models/village/catalogue.json, execution/smoke.mjs, execution/frames.mjs"
 # Left out of the diff the reviewer reads.
 review_exclude = ["pnpm-lock.yaml", "uv.lock", "client/public/models/*"]
 
