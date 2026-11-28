@@ -1,0 +1,50 @@
+{
+ "run": "aiventure3d-12-20261128-1141",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/12",
+ "status": "escalated",
+ "started": "2026-11-28 11:41:38",
+ "ended": "2026-11-28 15:00:08",
+ "seconds": {
+  "intake": 1,
+  "workspace": 2,
+  "spec": 443,
+  "holdout": 1327,
+  "implement": 3484,
+  "gates-0": 1021,
+  "fix-1": 3707,
+  "gates-1": 750,
+  "fix-2": 394,
+  "gates-2": 748,
+  "verify": 6652
+ },
+ "cost_usd": {
+  "claude": 47.4,
+  "pi": 0.15
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 1
+ },
+ "verify": {},
+ "ship": null,
+ "deploy": null,
+ "lessons": [
+  {
+   "id": "2026-11-28-smoke-gate-frame-time-town-dungeon",
+   "step": "verify-0",
+   "repeat": false
+  },
+  {
+   "id": "2026-11-28-smoke-gate-frame-time-town-dungeon",
+   "step": "verify-1",
+   "repeat": true
+  },
+  {
+   "id": "2026-11-28-smoke-gate-frame-time-town-dungeon",
+   "step": "verify-2",
+   "repeat": true
+  }
+ ],
+ "stopped_because": "Still failing after 2 fix rounds.\n\n### Gate `smoke` failed\n\n```\nframe time town: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\nframe time wilderness: p95 50.0 ms, baseline 50.0 ms (4fbc1f5), limit 60.0 ms: ok\nframe time dungeon: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\nframe time fight: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\ntour: 51 areas and 9 bosses in 191 s\nframe time town: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\n```"
+}
