@@ -1,0 +1,1 @@
+- Resolved 2026-11-28: the town slowdown was real and came from an earlier item (the glow point light of "Sound and feel"). Measuring the baseline commit, the commit of each item since, and the checkout in turns on the same machine (`node execution/frames.mjs --repo DIR --scenes town --runs 3`) showed it. Do that comparison before concluding that the machine is the cause.
