@@ -1,0 +1,52 @@
+{
+ "run": "aiventure3d-10-20261128-0345",
+ "target": "aiventure3d",
+ "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/10",
+ "status": "shipped",
+ "started": "2026-11-28 03:45:20",
+ "ended": "2026-11-28 06:53:33",
+ "seconds": {
+  "workspace": 2,
+  "spec": 424,
+  "holdout": 220,
+  "implement": 8602,
+  "gates-0": 535,
+  "fix-1": 551,
+  "gates-1": 535,
+  "review-1": 342,
+  "verify": 1972,
+  "ship": 12,
+  "deploy": 57,
+  "report": 3
+ },
+ "cost_usd": {
+  "claude": 63.61,
+  "pi": 0.17
+ },
+ "human_touches": {
+  "intake": 1,
+  "escalations": 0
+ },
+ "verify": {
+  "sha": "ebacc6860bdf5f44a28917c4a3f435aa8d49bdd9",
+  "fix_rounds": 1,
+  "holdout": "18 of 18",
+  "amended": null
+ },
+ "ship": {
+  "pr": "https://github.com/SmidigBommen/3d-aiventure/pull/26",
+  "merge_sha": "d4a7dc02835904c2cddbb3a9e90b266c5d442da8"
+ },
+ "deploy": {
+  "deployed": "d4a7dc02835904c2cddbb3a9e90b266c5d442da8",
+  "rolled_back": false
+ },
+ "lessons": [
+  {
+   "id": "2026-11-28-loading-indicator-rendered-as-json-array",
+   "step": "verify-0",
+   "repeat": false
+  }
+ ],
+ "stopped_because": null
+}
