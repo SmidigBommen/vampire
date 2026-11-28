@@ -4,7 +4,7 @@
  "issue": "https://github.com/SmidigBommen/3d-aiventure/issues/12",
  "status": "escalated",
  "started": "2026-11-28 11:41:38",
- "ended": "2026-11-28 15:44:07",
+ "ended": "2026-11-28 16:08:28",
  "seconds": {
   "intake": 1,
   "workspace": 2,
@@ -15,9 +15,8 @@
   "fix-1": 3707,
   "gates-1": 750,
   "fix-2": 394,
-  "gates-2": 826,
-  "review-2": 470,
-  "verify": 1308
+  "gates-2": 736,
+  "verify": 747
  },
  "cost_usd": {
   "claude": 47.41,
@@ -25,7 +24,7 @@
  },
  "human_touches": {
   "intake": 1,
-  "escalations": 2,
+  "escalations": 3,
   "manual_fix": 1
  },
  "verify": {},
@@ -51,7 +50,12 @@
    "id": "2026-11-28-do-not-loosen-frame-gate-baseline",
    "step": "verify-2",
    "repeat": false
+  },
+  {
+   "id": "2026-11-28-do-not-loosen-frame-gate-baseline",
+   "step": "verify-2",
+   "repeat": true
   }
  ],
- "stopped_because": "Still failing after 2 fix rounds.\n\n### The independent reviewer rejected the change\n\n- execution/frames.mjs: verdicts() re-judges a scene that misses the stored baseline against a baseline commit measured at gate time (baselineNow). That changes the limit the specification says must hold, rather than fixing or measuring the game: in the recorded smoke run town and dungeon were 66.6/66.7 ms, over the stored 60.1 ms limit, but passed because the live baseline was measured at 166.7 ms, raising the allowed time to 200 ms. A genuine regression anywhere below 200 ms would now pass as well. The work item did not ask to change execution/frames.mjs, and its frame-time check is supposed to keep using the stored baseline; run the gate on an idle host or fix the regression instead of inflating the baseline."
+ "stopped_because": "Still failing after 2 fix rounds.\n\n### Gate `smoke` failed\n\n```\nframe time town: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\nframe time wilderness: p95 50.1 ms, baseline 50.0 ms (4fbc1f5), limit 60.0 ms: ok\nframe time dungeon: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\nframe time fight: p95 50.1 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: ok\ntour: 51 areas and 9 bosses in 188 s\nframe time dungeon: p95 66.7 ms, baseline 50.1 ms (4fbc1f5), limit 60.1 ms: TOO SLOW\n```"
 }
